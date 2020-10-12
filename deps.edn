@@ -941,6 +941,13 @@
 
 
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; KREATIVRAUM CUSTOM
+
+  :ion-dev
+  {:deps {com.datomic/ion-dev {:mvn/version "0.9.247"}}
+   :main-opts ["-m" "datomic.ion.dev"]}
+
   } ;; End of alias definitions
 
 
@@ -970,4 +977,7 @@
 
              ;; Example of local Artifactory repository configuration
              ;; {"business-area" {:url "https://artifacts.internal-server.com:443/artifactory/business-area-maven-local"}
+
+             ;; KREATIVRAUM CUSTOM
+             "datomic-cloud" {:url "s3://datomic-releases-1fc2183a/maven/releases"}
              }}
