@@ -818,7 +818,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; KREATIVRAUM CUSTOM
+  ;; XCENO CUSTOM
 
   :ion-dev
   {:deps {com.datomic/ion-dev {:mvn/version "0.9.247"}}
@@ -856,4 +856,5 @@
 
              ;; KREATIVRAUM CUSTOM
              "datomic-cloud" {:url "s3://datomic-releases-1fc2183a/maven/releases"}
+             "cognitect-dev-tools" {:url "https://dev-tools.cognitect.com/maven/releases/"}
              }}
