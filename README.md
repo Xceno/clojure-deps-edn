@@ -10,8 +10,9 @@
 Aliases with common options are provided for convenience and to minimize the amount of cognitive load required to remember how to use aliases. Initial inspiration taken from [seancorfield/dot-clojure](https://github.com/seancorfield/dot-clojure).
 
 # Contents
-
+* [Installing practicalli/clojure-deps-edn](#installing-practicalli-clojure-deps-edn)
 * [Updating practicalli/clojure-deps-edn](#updating-practicalli-clojure-deps-edn)
+* [Common development tasks](#common-development-tasks)
 * [Aliases](#aliases)
     * [REPL experience](#repl-experience) | [Projects](#clojure-projects) | [Java sources](#java-sources) | [Databases](#databases-and-drivers) | [Data Inspectors](#data-inspectors) | [Middleware](#middleware) | [Clojure Spec](#clojure-specification) | [Unit Testing](#unit-testing-frameworks) | [Test runners](#test-runners-and-test-coverage-tools) | [Lint tools](#lint-tools) | [Visualize vars and deps](#visualizing-project-vars-and-library-dependencies) | [Performance testing](#performance-testing)
 * [Library repositories](#library-repositories)
@@ -23,23 +24,9 @@ Check the version of Clojure CLI tools currently installed
 clojure -Sdescribe
 ```
 
-## Install Clojure CLI tools
-Linux Script:
-```shell
-curl -O https://download.clojure.org/install/linux-install-1.10.1.697.sh
-chmod +x linux-install-1.10.1.697.sh
-sudo ./linux-install-1.10.1.697.sh
-```
 
-Homebrew - MacOSX or Linux:
-```shell
-brew install clojure/tools/clojure
-```
-
-Windows version not currently released.
-
-## Installing Clojure deps.edn
-[Fork the practicalli/clojure-deps-edn repository](https://github.com/practicalli/clojure-deps-edn/) and clone your fork to an existing `~/.clojure/` directory (eg. $HOME/.clojure or %HOME%\.clojure).
+# Install Practicalli clojure-deps-edn
+Fork the practicalli/clojure-deps-edn repository and clone your fork to an existing `~/.clojure/` directory (eg. `$HOME/.clojure` or `%HOME%\.clojure`).
 
 ```shell
 git clone your-fork-url ~/.clojure/
@@ -49,12 +36,12 @@ The configuration from `~/.clojure/deps.edn` is now available for all Clojure CL
 
 Any directory containing a `deps.edn` file is considered a Clojure project. A `deps.edn` file can contain an empty hash-map, `{}` or hash-map with configuration.  The project `deps.edn` file is merged with the user wide configuration, with the project `deps.edn` keys taking precedence if there is duplication.
 
-![Clojure CLI tools deps.edn configuration precedence](https://raw.githubusercontent.com/jr0cket/developer-guides/master/clojure/clojure-cli-tools-deps-edn-configuration-precedence.png)
+![Clojure CLI tools deps.edn configuration precedence](https://raw.githubusercontent.com/practicalli/graphic-design/master/clojure/clojure-cli-tools/clojure-cli-tools-deps-edn-configuration-precedence.png)
 
 See the rest of this readme for examples of how to use each alias this configuration contains.
 
 
-## Updating Practicalli clojure-deps-edn
+# Updating Practicalli clojure-deps-edn
 The collection of aliases is regularly reviewed and expanded upon and suggestions are most welcome.
 
 The versions of libraries are manually updated at least once per month using the `:outdated` alias and a new version of the `deps.edn` file pushed to this repository.
@@ -62,6 +49,31 @@ The versions of libraries are manually updated at least once per month using the
 cd ~/.clojure/
 clojure -M:project/outdated
 ```
+
+# Common development tasks
+How to run common tasks for Clojure development.
+* Built-in tasks require no additional configuration.
+* User aliases should be added to `~/.clojure/deps.edn`.
+* Project aliases should be added to the individual project deps.edn file (or may be part of a template).
+* User/Project alias can be defined in both user and project deps.edn files (typically added to project deps.edn for external running such as Continuous Integration)
+
+| Task                                                    | Command                                                         | Configuration      |
+|---------------------------------------------------------|-----------------------------------------------------------------|--------------------|
+| Create project (clojure exec)                           | `clojure -X:project/new :template app :name practicalli/my-app` | User alias         |
+| Create project (clojure main)                           | `clojure -M:project/new app practicalli/my-app`                 | User alias         |
+| Download dependencies                                   | `clojure -Spath` or `clojure -P`  (plus optional aliases)       | Built-in           |
+| Run the project                                         | `clojure -M -m domain.main-namespace`                           | Built-in           |
+| [Run the project](https://youtu.be/u5VoFpsntXc?t=2166)* | `clojure -X:project/run`                                        | Project alias      |
+| Find libraries (mvn & git)                              | `clojure -M:project/find-deps library-name`                     | User alias         |
+| Check for new dependency versions                       | `clojure -M:project/outdated`                                   | User alias         |
+| Run tests                                               | `clojure -M:test/runner`                                        | User/Project alias |
+| Package library                                         | `clojure -X:project/jar`                                        | User/Project alias |
+| Deploy library locally                                  | `clojure -X:deps mvn-install`                                   | Built-in           |
+| Package application                                     | `clojure -X:project/uberjar`                                    | User/Project alias |
+
+> Add alias `:project/run` to the deps.edn file in the root of a project: `:project/run {:ns-default domain.namespace :exec-fn -main}` - see this video for an example https://youtu.be/u5VoFpsntXc?t=2166
+
+> Most aliases use the `-M` flag.  Only use the `-X` flag when you know it is supported by that task
 
 
 # Aliases
@@ -126,6 +138,7 @@ Create a new project (Edn command line arguments - recommended approach)
 | `clojure -X:project/new :template app :name practicalli/my-application`                   | App project with given name                          |
 | `clojure -X:project/new :template luminus :name practicalli/full-stack-app +http-kit +h2` | Luminus project with given name and template options |
 
+### Running projects
 
 Run project with or without an alias:
 ```shell
@@ -135,6 +148,15 @@ clojure -M -m domain.app-name
 
 > The `-M` flag is required even if an alias is not included in the running of the application.  A warning will be displayed if the `-M` option is missing.
 
+In the project deps.edn file it could be useful to define an alias to run the project, specifying the main namespace, the function to run and optionally any default arguments that are passed to that function.
+
+```clojure
+:project/run
+{:ns-default domain.main-namespace
+ :exec-fn -main
+ :exec-args {:port 8888}}
+```
+Then the project can be run using `clojure -X:project/run` and arguments can optionally be included in this command line, to complement or replace any default aruments in `exec-args`.
 
 ## Project dependencies
 
@@ -287,6 +309,8 @@ Evaluate `(add-tap ((requiring-resolve 'vlaaad.reveal/ui)))` when using Rebel Re
 ### Cognitect REBL
 Visualize the results of each evaluation in the REPL in the REBL UI.  Navigate through complex data structures.
 
+> Cognitect REBL aliases requires [several separate install steps](http://practicalli.github.io/clojure/alternative-tools/clojure-tools/cognitect-rebl.html) before they are operational
+
 * `inspect/rebl` - REBL, a visual data explorer (Java 11)
 * `inspect/rebl-java8` - REBL, a visual data explorer (Oracle Java 8)
 
@@ -297,7 +321,6 @@ Visualize the results of each evaluation in the REPL in the REBL UI.  Navigate t
 | `clojure -M:lib/cider-nrepl:inspect/rebl:middleware/nrebl` | REBL REPL and UI with nREPL server (CIDER, Calva) |
 
 
-
 ## Middleware
 Aliases for libraries that combine community tools and REPL protocols (nREPL, SocketREPL).
 
@@ -306,15 +329,17 @@ Run a REPL on the command line for access by `cider-connect-` commands, providin
 ### nREPL
 * `:middleware/nrepl` - Clojure REPL with an nREPL server
 * `:middleware/cider-clj` - Clojure REPL with nREPL server and CIDER dependencies for `cider-connect-clj`
+* `:middleware/cider-clj-refactor` - as :middleware/cider-clj with clj-refactor added
 * `:middleware/cider-cljs` - ClojureScript REPL with nREPL server and CIDER dependencies for `cider-connect-cljs`
 
 Use the aliases with either `-M` or `-X` flags on the Clojure command line.
 
-| Command                             | Description                                                                           |
-|-------------------------------------|---------------------------------------------------------------------------------------|
-| `clojure -M::middleware/nrepl`      | Run a Clojure REPL that includes nREPL server                                         |
-| `clojure -M::middleware/cider-clj`  | Run a Clojure REPL that includes nREPL server and CIDER connection dependencies       |
-| `clojure -M::middleware/cider-cljs` | Run a ClojureScript REPL that includes nREPL server and CIDER connection dependencies |
+| Command                                    | Description                                                                                      |
+|--------------------------------------------|--------------------------------------------------------------------------------------------------|
+| `clojure -M:middleware/nrepl`              | Run a Clojure REPL that includes nREPL server                                                    |
+| `clojure -M:middleware/cider-clj`          | Run a Clojure REPL that includes nREPL server and CIDER connection dependencies                  |
+| `clojure -M:middleware/cider-clj-refactor` | Run a Clojure REPL that includes nREPL server and CIDER connection dependencies and clj-refactor |
+| `clojure -M:middleware/cider-cljs`         | Run a ClojureScript REPL that includes nREPL server and CIDER connection dependencies            |
 
 
 
@@ -377,19 +402,19 @@ Run clojure with the specific test runner alias: `clojure -A:test-runner-alias`
 * [`:test-runner/eftest`](https://github.com/weavejester/eftest) - fast and pretty test runner
 * [:test-runner/coverage](https://github.com/cloverage/cloverage) - simple clojure coverage tool for `clojure.test` defined unit tests.
 
-| Command                            | Description                                                                       |
-|------------------------------------|-----------------------------------------------------------------------------------|
-| `clojure -M:test/cognitect`        | Cognitect Clojure test runner                                                     |
-| `clojure -M:test/cljs`             | ClojureScript test runner (Olical)                                                |
-| `clojure -M:test/runner`           | Kaocha - comprehensive test runner for Clojure (same as :test/kaocha)             |
-| `clojure -M:test/kaocha`           | Kaocha - comprehensive test runner for Clojure                                    |
-| `clojure -M:test/kaocha-cljs`      | Kaocha - comprehensive test runner for ClojureScript                              |
-| `clojure -M:test/kaocha-cucumber`  | Kaocha - comprehensive test runner with BDD Cucumber tests                        |
-| `clojure -M:test/kaocha-junit-xml` | Kaocha - comprehensive test runner with Junit XML reporting for CI dashboards & wallboards |
-| `clojure -M:test/kaocha-cloverage` | Kaocha - comprehensive test runner with test coverage reporting                   |
-| `clojure -M:test/midje`            | Midje test runner for BDD style tests                                             |
-| `clojure -M:test/eftest`           | Fast Clojure test runner, pretty output, parallel tests                           |
-| `clojure -M:test/coverage`         | Cloverage clojure.test coverage report                                            |
+| Command                                     | Description                                                                                |
+|---------------------------------------------|--------------------------------------------------------------------------------------------|
+| `clojure -M:test/cognitect`                 | Cognitect Clojure test runner                                                              |
+| `clojure -M:test/cljs`                      | ClojureScript test runner (Olical)                                                         |
+| `clojure -M:test/runner`                    | Kaocha - comprehensive test runner for Clojure (same as :test/kaocha)                      |
+| `clojure -M:env/test:test/kaocha`           | Kaocha - comprehensive test runner for Clojure                                             |
+| `clojure -M:env/test:test/kaocha-cljs`      | Kaocha - comprehensive test runner for ClojureScript                                       |
+| `clojure -M:env/test:test/kaocha-cucumber`  | Kaocha - comprehensive test runner with BDD Cucumber tests                                 |
+| `clojure -M:env/test:test/kaocha-junit-xml` | Kaocha - comprehensive test runner with Junit XML reporting for CI dashboards & wallboards |
+| `clojure -M:env/test:test/kaocha-cloverage` | Kaocha - comprehensive test runner with test coverage reporting                            |
+| `clojure -M:test/midje`                     | Midje test runner for BDD style tests                                                      |
+| `clojure -M:test/eftest`                    | Fast Clojure test runner, pretty output, parallel tests                                    |
+| `clojure -M:test/coverage`                  | Cloverage clojure.test coverage report                                                     |
 
 
 ## Lint tools
